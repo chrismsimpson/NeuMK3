@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "neu tests (bootstrap)",
+            "type": "coreclr",
+            "request": "launch",
+            // "preLaunchTask": "build",
+            "program": "${workspaceFolder}/Boostrap/bin/Debug/net5.0/Bootstrap.dll",
+            "args": [
+                "neu",
+                "tests"
+            ],
+            "cwd": "${workspaceFolder}/Bootstrap",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "stopAtEntry": false,
+            "logging": {
+                "moduleLoad": false,
+                "engineLogging": false,
+                "elapsedTiming": false,
+                "exceptions": true,
+                "processExit": true,
+                "programOutput": true,
+                "threadExit": false
+            },
+            "requireExactSource": true
+        }
+    ]
+}
