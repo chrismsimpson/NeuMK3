@@ -6,8 +6,15 @@ using System;
 
 namespace Neu
 {
-    public partial class Argument
+    public partial class Argument : IArgument
     {
-        public Argument() {}
+        public ArgToken Arg { get; init; }
+
+        ///
+        public Argument(
+            ArgToken arg)
+        {
+            this.Arg = arg;
+        }
     }
 }

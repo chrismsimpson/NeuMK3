@@ -6,9 +6,9 @@ using System;
 
 namespace Neu
 {
-    public partial class OptionToken : ArgToken
+    public partial class UnknownArgToken : ArgToken
     {
-        public OptionToken(
+        public UnknownArgToken(
             String source,
             int position)
             : base(source, position) { }

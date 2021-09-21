@@ -6,7 +6,7 @@ using System;
 
 namespace Neu
 {
-    public partial class ArgsToken
+    public partial class ArgToken
     {
         public String Source { get; init; }
 
@@ -14,7 +14,7 @@ namespace Neu
 
         ///
 
-        public ArgsToken(
+        public ArgToken(
             String source,
             int position)
         {
