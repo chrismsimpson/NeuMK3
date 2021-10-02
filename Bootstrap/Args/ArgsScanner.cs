@@ -27,7 +27,7 @@ namespace Neu
 
     ///
 
-    public static partial class ArgsScannerHelpers
+    public static partial class ArgsScannerFunctions
     {
         public static String Consume(
             this ArgsScanner scanner)

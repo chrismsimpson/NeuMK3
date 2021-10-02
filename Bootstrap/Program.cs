@@ -13,6 +13,10 @@ namespace Neu
         public static void Main(
             String[] args)
         {
+            var arguments = args
+                .ToArguments();
+
+            WriteLine(arguments);
             // args
 
             WriteLine("Hello World!");

@@ -43,7 +43,7 @@ namespace Neu
 
     ///
 
-    public static partial class ArgsTokenizerHelpers
+    public static partial class ArgsTokenizerFunctions
     {
         public static bool IsEof(
             this ArgsTokenizer tokenizer)

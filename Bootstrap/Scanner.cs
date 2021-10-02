@@ -3,8 +3,11 @@
 //
 
 using System;
+using System.IO;
+using System.Linq;
 using System.Text;
 
+using static System.Array;
 using static System.Char;
 using static System.DateTimeOffset;
 using static System.String;
@@ -13,19 +16,28 @@ using static Neu.Scanner;
 
 namespace Neu
 {
-    public partial class Scanner
+    public interface IScanner
+    {
+        int RawPosition { get; set; }
+
+        int LineNumber { get; set; }
+
+        int Column { get; set; }
+    }
+
+    public partial class StringScanner : IScanner
     {
         public String Source { get; init; }
-
-        internal int RawPosition { get; set; }
         
-        internal int LineNumber { get; set; }
+        public int RawPosition { get; set; }
 
-        internal int Column { get; set; }
+        public int LineNumber { get; set; }
+
+        public int Column { get; set; }
 
         ///
 
-        public Scanner(
+        public StringScanner(
             String source)
         {
             this.Source = source;
@@ -42,29 +54,51 @@ namespace Neu
         }
     }
 
-    ///
-
-    public partial class Scanner
+    public partial class StreamScanner : IScanner
     {
-        public static bool IsZeroThruTen(
-            Char c)
+        public Stream Source { get; init; }
+
+        public StreamReader Reader { get; init; }
+
+        public int RawPosition { get; set; }
+
+        public int LineNumber { get; set; }
+
+        public int Column { get; set; }
+
+        ///
+
+        public StreamScanner(
+            Stream source)
         {
-            return c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9'; 
+            this.Source = source;
+
+            ///
+
+            this.Reader = new StreamReader(this.Source);
+
+            ///
+
+            this.RawPosition = 0;
+
+            ///
+
+            this.LineNumber = 1;
+
+            this.Column = 1;
         }
 
-        public static bool IsSpaceOrTabs(
-            Char c)
+        ~StreamScanner()
         {
-            return c == ' ' || c == '\t';
+            this.Reader.Dispose();
+            this.Source.Dispose();
         }
     }
 
-    ///
-
-    public static partial class ScannerHelpers
+    public static partial class IScannerFunctions
     {
-        public static SourceLocation Position(
-            this Scanner scanner)
+        public static SourceLocation GetPosition(
+            this IScanner scanner)
         {
             return new SourceLocation(
                 rawPosition: scanner.RawPosition,
@@ -72,12 +106,127 @@ namespace Neu
                 column: scanner.Column);
         }
 
-        ///
-
-        public static Char Consume(
-            this Scanner scanner)
+        public static bool IsEof(
+            this IScanner scanner)
         {
-            var c = scanner.Source[scanner.RawPosition];
+            switch (scanner)
+            {
+                case StringScanner stringScanner:
+                    return stringScanner.RawPosition >= stringScanner.Source.Length;
+
+                ///
+
+                case StreamScanner streamScanner:
+                    return streamScanner.RawPosition >= streamScanner.Source.Length;
+
+                ///
+
+                default:
+                    throw new Exception();
+            }
+        }
+
+        internal static int GetLength(
+            this IScanner scanner)
+        {
+            switch (scanner)
+            {
+                case StringScanner stringScanner:
+
+                    return stringScanner.Source.Length;
+
+
+                ///
+
+                case StreamScanner streamScanner:
+
+                    return Convert.ToInt32(streamScanner.Source.Length);
+
+
+                ///
+
+                default:
+                    throw new Exception();
+            }
+        }
+
+        private static Char[] RawConsume(
+            this IScanner scanner,
+            int length)
+        {
+            var end = scanner.RawPosition + length;
+
+            if (end > scanner.GetLength())
+            {
+                throw new Exception();
+            }
+
+            ///
+
+            switch (scanner)
+            {
+                case StringScanner stringScanner:
+
+                    var stringBuffer = new Char[length];
+
+                    for (var i = 0; i < length; i++)
+                    {
+                        stringBuffer[i] = stringScanner.Source[scanner.RawPosition + i];
+                    }
+
+                    return stringBuffer;
+
+
+                ///
+
+                case StreamScanner streamScanner:
+
+                    var sourceBuffer = new char[length];
+
+                    ///
+
+                    streamScanner.Source.Position = streamScanner.RawPosition;
+
+                    streamScanner.Reader.SetPosition(streamScanner.RawPosition);
+
+                    ///
+
+                    for (var i = 0; i < length; i++)
+                    {
+                        sourceBuffer[i] = Convert.ToChar(streamScanner.Reader.Read());
+                    }
+
+                    ///
+
+                    streamScanner.Source.Position = streamScanner.RawPosition;
+
+                    streamScanner.Reader.SetPosition(streamScanner.RawPosition);
+
+                    ///
+
+                    return sourceBuffer;
+
+                ///
+
+                default:
+
+                    throw new Exception();
+            }
+        }
+        
+        public static Char Consume(
+            this IScanner scanner)
+        {
+            var buffer = scanner.RawConsume(length: 1);
+
+            if (buffer.Length != 1)
+            {
+                throw new Exception();
+            }
+
+            ///
+
+            var c = buffer[0];
 
             ///
 
@@ -107,32 +256,11 @@ namespace Neu
             return c;
         }
 
-        public static Char[] Consume(
-            this Scanner scanner, 
-            int length)
-        {
-            var end = scanner.RawPosition + length;
-
-            if (end >= scanner.Source.Length)
-            {
-                throw new Exception();
-            }
-
-            var chars = new Char[length];
-
-            for (var i = 0; i < length; i++)
-            {
-                chars[i] = scanner.Consume();
-            }
-
-            return chars;
-        }
-
         public static String ConsumeString(
-            this Scanner scanner,
+            this IScanner scanner,
             int length)
         {
-            var chars = scanner.Consume(length: length);
+            var chars = scanner.RawConsume(length: length);
 
             if (chars.Length != length)
             {
@@ -150,11 +278,15 @@ namespace Neu
 
             ///
 
+            scanner.RawPosition += length;
+
+            ///
+
             return maybeString;
         }
 
         public static Char Consume(
-            this Scanner scanner, 
+            this IScanner scanner, 
             Char c)
         {
             var next = scanner.Consume();
@@ -168,7 +300,7 @@ namespace Neu
         }
 
         public static String Consume(
-            this Scanner scanner, 
+            this IScanner scanner, 
             String s)
         {
             var result = new StringBuilder();
@@ -182,7 +314,7 @@ namespace Neu
         }
 
         public static String Consume(
-            this Scanner scanner, 
+            this IScanner scanner, 
             Func<Char, bool> test)
         {
             var result = new StringBuilder();
@@ -196,7 +328,7 @@ namespace Neu
         }
 
         public static String ConsumeUntil(
-            this Scanner scanner, 
+            this IScanner scanner, 
             Char c)
         {
             var result = new StringBuilder();
@@ -210,7 +342,7 @@ namespace Neu
         }
 
         public static String ConsumeUntil(
-            this Scanner scanner, 
+            this IScanner scanner, 
             Func<Char, bool> test)
         {
             var result = new StringBuilder();
@@ -224,7 +356,7 @@ namespace Neu
         }
 
         public static String ConsumeUntil(
-            this Scanner scanner,
+            this IScanner scanner,
             String test)
         {
             var result = new StringBuilder();
@@ -238,7 +370,7 @@ namespace Neu
         }
 
         public static String ConsumeUntilInclusive(
-            this Scanner scanner,
+            this IScanner scanner,
             String test)
         {
             var result = new StringBuilder();
@@ -254,31 +386,31 @@ namespace Neu
         }
 
         public static String ConsumeWhitespace(
-            this Scanner scanner)
+            this IScanner scanner)
         {
             return scanner.Consume(c => IsWhiteSpace(c));
         }
 
         public static String ConsumeUntilWhitespace(
-            this Scanner scanner)
+            this IScanner scanner)
         {
             return scanner.ConsumeUntil(c => IsWhiteSpace(c));
         }
 
         public static String ConsumeSpaceOrTabs(
-            this Scanner scanner)
+            this IScanner scanner)
         {
             return scanner.Consume(c => IsSpaceOrTabs(c));
         }
 
         public static String ConsumeZeroThruTen(
-            this Scanner scanner)
+            this IScanner scanner)
         {
             return scanner.Consume(c => IsZeroThruTen(c));
         }
 
         public static String ConsumeUntilEnd(
-            this Scanner scanner)
+            this IScanner scanner)
         {
             var result = new StringBuilder();
 
@@ -290,79 +422,93 @@ namespace Neu
             return result.ToString();
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         ///
 
-        public static bool IsEof(
-            this Scanner scanner)
+        public static String RawNext(
+            this IScanner scanner,
+            int length)
         {
-            return scanner.RawPosition == scanner.Source.Length;
-        }
+            switch (scanner)
+            {
+                case StringScanner stringScanner:
 
-        ///
+                    return stringScanner.Source.Substring(scanner.RawPosition, length);
+
+                ///
+
+                case StreamScanner streamScanner:
+
+                    var buffer = streamScanner.RawConsume(length: length);
+
+                    if (buffer.Length != length)
+                    {
+                        throw new Exception();
+                    }
+
+                    ///
+
+                    return new String(buffer);
+
+
+                ///
+
+                default:
+
+                    throw new Exception();
+            }
+        }
 
         public static char RawNext(
-            this Scanner scanner)
+            this IScanner scanner)
         {
-            return scanner.Source[scanner.RawPosition];
+            var next = scanner.RawNext(length: 1);
+
+            if (next.Length != 1)
+            {
+                throw new Exception();
+            }
+
+            return next[0];
         }
 
-        ///
-
         public static char? Next(
-            this Scanner scanner)
+            this IScanner scanner)
         {
             if (scanner.IsEof())
             {
                 return null;
             }
 
-            return scanner.Source[scanner.RawPosition];
+            return scanner.RawNext();
         }
-
-        ///
 
         public static bool Next(
-            this Scanner lexer, 
+            this IScanner scanner, 
             String equals)
         {
-            if (lexer.IsEof())
+            if (scanner.IsEof())
             {
                 return false;
             }
 
-            var start = lexer.RawPosition;
+            var start = scanner.RawPosition;
 
             var end = start + equals.Length;
 
-            if (end >= lexer.Source.Length)
+            if (end >= scanner.GetLength())
             {
                 return false;
             }
 
-            var next = lexer.Source.Substring(start, equals.Length);
+            var next = scanner.RawNext(length: equals.Length);
 
             return next == equals;
         }
 
         ///
 
-        public static bool Peek(
-            this Scanner scanner,
+        public static bool Match(
+            this IScanner scanner,
             String equals)
         {
             if (scanner.IsEof())   
@@ -370,77 +516,122 @@ namespace Neu
                 return false;
             }
 
-            var start = scanner.RawPosition + 1;
+            ///
 
-            var end = start + equals.Length;
+            var end = scanner.RawPosition + equals.Length + 1;
 
-            if (end >= scanner.Source.Length)
+            if (end >= scanner.GetLength())
             {
                 return false;
             }
 
-            var next = scanner.Source.Substring(start, equals.Length);
+            ///
+
+            var bufferLength = equals.Length + 1;
+
+            var buffer = scanner.RawNext(bufferLength);
+
+            if (buffer.Length != bufferLength)
+            {
+                throw new Exception();
+            }
+
+            ///
+
+            var next = buffer.Substring(1);
+
+            ///
 
             return next == equals;
         }
 
-        public static bool Peek(
-            this Scanner lexer,
+        public static bool Match(
+            this IScanner scanner,
             Char equals)
         {
-            if (lexer.IsEof())   
+            if (scanner.IsEof())   
             {
                 return false;
             }
 
-            var n = lexer.RawPosition + 1;
+            ///
 
-            if (n >= lexer.Source.Length)
+            var end = scanner.RawPosition + 2;
+
+            if (end >= scanner.GetLength())
             {
                 return false;
             }
 
-            var next = lexer.Source[n];
+            ///
+
+            var buffer = scanner.RawNext(length: 2);
+
+            if (buffer.Length != 2)
+            {
+                throw new Exception();
+            }
+
+            ///
+
+            var next = buffer[1];
+
+            ///
 
             return next == equals;
         }
 
         ///
 
-        public static bool PeekThenWhitespace(
-            this Scanner scanner,
+        public static bool MatchWithTrailingWhitespace(
+            this IScanner scanner,
             String equals)
         {
-            if (scanner.IsEof())   
+            if (scanner.IsEof())
             {
                 return false;
             }
 
-            var start = scanner.RawPosition + 1;
+            ///
 
-            var end = start + equals.Length;
+            var end = scanner.RawPosition + equals.Length + 1;
 
-            if (end >= scanner.Source.Length)
+            if (end >= scanner.GetLength())
             {
                 return false;
             }
 
-            var next = scanner.Source.Substring(start, equals.Length);
+            ///
+
+            var bufferLength = equals.Length + 2;
+
+            var buffer = scanner.RawNext(bufferLength);
+
+            if (buffer.Length != bufferLength)
+            {
+                throw new Exception();
+            }
+
+            ///
+
+            var next = buffer.Substring(1, equals.Length);
 
             if (next != equals)
             {
                 return false;
             }
 
-            var possibleWhitespace = scanner.Source[end];
+            ///
+
+            var possibleWhitespace = buffer[equals.Length + 1];
+
+            ///
 
             return IsWhiteSpace(possibleWhitespace);
         }
 
-        ///
-
-        public static bool PeekThenDelimiter(
-            this Scanner scanner,
+        public static bool MatchWithTrailingDelimiter(
+            this IScanner scanner,
             String equals,
             Func<char, bool> delimitedBy)
         {
@@ -449,64 +640,59 @@ namespace Neu
                 return false;
             }
 
-            var start = scanner.RawPosition + 1;
+            ///
 
-            var end = start + equals.Length;
-
-            if (end >= scanner.Source.Length)
+            var end = scanner.RawPosition + equals.Length + 1;
+            
+            if (end >= scanner.GetLength())
             {
                 return false;
             }
 
-            var next = scanner.Source.Substring(start, equals.Length);
+            ///
+            
+            var bufferLength = equals.Length + 2;
+
+            var buffer = scanner.RawNext(bufferLength);
+
+            if (buffer.Length != bufferLength)
+            {
+                throw new Exception();
+            }
+
+            ///
+
+            var next = buffer.Substring(1, equals.Length);
 
             if (next != equals)
             {
                 return false;
             }
 
-            var possibleDelimiter = scanner.Source[end];
+            ///
 
+            var possibleDelimiter = buffer[equals.Length + 1];
+
+            ///
+            
             return delimitedBy(possibleDelimiter);
         }
+    }
 
-        ///
+    ///
 
-        public static bool PeekNumbersThenDelimiter(
-            this Scanner scanner,
-            Func<char, bool> delimitedBy)
+    public partial class Scanner
+    {
+        public static bool IsZeroThruTen(
+            Char c)
         {
-            if (scanner.IsEof())   
-            {
-                return false;
-            }
+            return c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9'; 
+        }
 
-            var pos = scanner.RawPosition + 1;
-
-            var next = scanner.Source[pos];
-
-            var digits = 0;
-
-            while (pos < scanner.Source.Length)
-            {
-                if (!IsZeroThruTen(next))
-                {
-                    break;
-                }
-
-                digits++;
-
-                pos++;
-
-                next = scanner.Source[pos];
-            }
-
-            if (digits < 1)
-            {
-                return false;
-            }
-
-            return delimitedBy(next);
+        public static bool IsSpaceOrTabs(
+            Char c)
+        {
+            return c == ' ' || c == '\t';
         }
     }
 }

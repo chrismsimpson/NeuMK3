@@ -34,7 +34,7 @@ namespace Neu
 
     ///
 
-    public static partial class ArgsParserHelpers
+    public static partial class ArgsParserFunctions
     {
         public static IEnumerable<IArgument> ParseArguments(
             this ArgsParser parser)
@@ -104,7 +104,7 @@ namespace Neu
 
             while (!parser.Tokenizer.IsEof())
             {
-                if (parser.Tokenizer.PeekOptionToken())
+                if (parser.Tokenizer.MatchOptionToken())
                 {
                     break;
                 }

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Neu
 {
-    public static partial class ArgsTokenizerHelpers
+    public static partial class ArgsTokenizerFunctions
     {
         public static ArgToken? Peek(
             this ArgsTokenizer tokenizer)
@@ -36,7 +36,7 @@ namespace Neu
             return next;
         }
 
-        public static bool PeekOptionToken(
+        public static bool MatchOptionToken(
             this ArgsTokenizer tokenizer)
         {
             if (tokenizer.Peek() is OptionToken)
