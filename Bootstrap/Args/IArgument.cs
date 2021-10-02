@@ -51,7 +51,6 @@ namespace Neu
 
             return false;
         }
-    
 
         public static IEnumerable<IArgument> ToArguments(
             this String[] args)
@@ -103,6 +102,71 @@ namespace Neu
             ///
 
             return a.Arg.Source.ToAbsolutePathString();
+        }
+
+        ///
+
+        public static bool AnyArgumentsAfterFirst(
+            this IEnumerable<IArgument> arguments)
+        {
+            foreach (var argument in arguments.DropArguments(number: 1))
+            {
+                if (argument is Argument a)
+                {
+                    return true;   
+                }
+            }
+
+            ///
+
+            return false;
+        }
+
+        ///
+
+        public static IEnumerable<IArgument> DropArguments(
+            this IEnumerable<IArgument> arguments,
+            int number)
+        {
+            var c = 0;
+
+            foreach (var argument in arguments)
+            {
+                switch (argument)
+                {
+                    case Argument a when c < number:
+
+                        c++;
+
+                        break;
+
+                    ///
+
+                    default:
+
+                        yield return argument;
+
+                        break;
+                }
+            }
+        }
+
+        ///
+
+        public static String? GetSecondArgument(
+            this IEnumerable<IArgument> arguments)
+        {
+            foreach (var argument in arguments.DropArguments(number: 1))
+            {
+                if (argument is Argument a)
+                {
+                    return a.Arg.Source;
+                }
+            }
+
+            ///
+
+            return null;
         }
     }
 }

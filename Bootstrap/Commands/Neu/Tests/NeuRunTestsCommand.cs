@@ -6,9 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using static System.Console;
+
 namespace Neu
 {
-    public partial class NeuRunTestsCommand
+    public partial class NeuRunTestsCommand : ICommand
     {
         public NeuRunTestsCommand() { }
 
@@ -17,16 +19,10 @@ namespace Neu
         public async Task Run(
             IEnumerable<IArgument> arguments)
         {
-            await Task.Run(() => {});
+            WriteLine($"//  {arguments.GetFirstArgument()}\n");
 
-            throw new Exception();
-            
-            // WriteLine($"//  {arguments.GetFirstArgument()}\n");
-
-            // await (new NeuRunArithmeticTestCommand())
-            //     .Run("neu", "../Tests/Neu/test01.neu");
-            
-            // await Task.Run(() => {});
+            await (new NeuRunArithmeticTestCommand())
+                .Run("neu", "../Tests/Neu/test01.neu");
         }
     }
 }

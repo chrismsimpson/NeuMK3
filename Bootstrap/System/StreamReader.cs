@@ -53,7 +53,7 @@ namespace Neu
             type.InvokeMember("_charPos", flags, null, reader, new object[] { value });
         }
 
-        public static void SetLenth(
+        public static void SetLength(
             this StreamReader reader,
             int value)
         {

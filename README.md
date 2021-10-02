@@ -1,3 +1,3 @@
 # Neu
 
-A new programming language
+The escape hatch

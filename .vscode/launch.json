@@ -9,10 +9,7 @@
             "program": "${workspaceFolder}/Bootstrap/bin/Debug/net5.0/Bootstrap.dll",
             "args": [
                 "neu",
-                "tests",
-                "--foo",
-                "bar",
-                "baz"
+                "tests"
             ],
             "cwd": "${workspaceFolder}/Bootstrap",
             "console": "integratedTerminal",

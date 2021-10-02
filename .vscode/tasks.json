@@ -3,10 +3,9 @@
     "tasks": [
         {
             "label": "build",
-            "command": "dotnet build ./Bootstrap/Bootstrap.sln",
+            "command": "dotnet build Bootstrap/Bootstrap.sln",
             "type": "shell",
             "args": [
-                
             ],
             "group": {
                 "kind": "build",
