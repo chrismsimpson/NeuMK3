@@ -26,7 +26,29 @@ namespace Neu
 
             ///
 
-            throw new Exception();
+            var id = parser.Tokenizer.TokenizeIdentifier();
+
+            children.Add(id);
+
+            ///
+
+            var sig = parser.ParseFuncSig();
+
+            children.Add(sig);
+
+            ///
+
+            var codeBlock = parser.ParseCodeBlock();
+
+            children.Add(codeBlock);
+
+            ///
+
+            return new NeuFuncDecl(
+                children: children,
+                start: start,
+                end: parser.Tokenizer.GetPosition());
         }
+
     }
 }

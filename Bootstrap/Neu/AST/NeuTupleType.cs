@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace Neu
 {
-    public partial class NeuCodeBlockItem : NeuNode
+    public partial class NeuTupleType : NeuNode
     {
-        public NeuCodeBlockItem(
+        public NeuTupleType(
             IEnumerable<Node> children,
             SourceLocation start,
             SourceLocation end)
@@ -18,9 +18,9 @@ namespace Neu
 
     ///
 
-    public partial class NeuCodeBlockItemList : NeuNode
+    public partial class NeuTupleTypeElement : NeuNode
     {
-        public NeuCodeBlockItemList(
+        public NeuTupleTypeElement(
             IEnumerable<Node> children,
             SourceLocation start,
             SourceLocation end)
@@ -29,9 +29,9 @@ namespace Neu
 
     ///
 
-    public partial class NeuCodeBlock : NeuNode
+    public partial class NeuTupleTypeElementList : NeuNode
     {
-        public NeuCodeBlock(
+        public NeuTupleTypeElementList(
             IEnumerable<Node> children,
             SourceLocation start,
             SourceLocation end)

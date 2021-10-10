@@ -98,5 +98,40 @@ namespace Neu
                     return parser.ParseStatement();
             }
         }
+
+        public static NeuCodeBlock ParseCodeBlock(
+            this NeuParser parser)
+        {
+            var start = parser.Tokenizer.GetPosition();
+
+            ///
+
+            var children = new List<Node>();
+
+            ///
+
+            var leftBrace = parser.Tokenizer.TokenizeLeftBrace();
+
+            children.Add(leftBrace);
+
+            ///
+
+            var list = parser.ParseCodeBlockItemList();
+
+            children.Add(list);
+
+            ///
+
+            var rightBrace = parser.Tokenizer.TokenizeRightBrace();
+
+            children.Add(rightBrace);
+
+            ///
+
+            return new NeuCodeBlock(
+                children: children,
+                start: start,
+                end: parser.Tokenizer.GetPosition());
+        }
     }
 }

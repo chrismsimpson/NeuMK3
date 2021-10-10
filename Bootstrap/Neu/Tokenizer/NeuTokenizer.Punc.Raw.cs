@@ -104,5 +104,29 @@ namespace Neu
         {
             return tokenizer.RawTokenizePunc(',', NeuPuncType.Comma);
         }
+
+        private static NeuPunc RawTokenizeColon(
+            this Tokenizer<NeuToken> tokenizer)
+        {
+            return tokenizer.RawTokenizePunc(':', NeuPuncType.Colon);
+        }
+
+        private static NeuPunc RawTokenizeArrow(
+            this Tokenizer<NeuToken> tokenizer)
+        {
+            return tokenizer.RawTokenizePunc("->", NeuPuncType.Arrow);
+        }
+
+        private static NeuPunc RawTokenizeEqual(
+            this Tokenizer<NeuToken> tokenizer)
+        {
+            return tokenizer.RawTokenizePunc('=', NeuPuncType.Equal);
+        }
+
+        private static NeuPunc RawTokenizePlus(
+            this Tokenizer<NeuToken> tokenizer)
+        {
+            return tokenizer.RawTokenizePunc('+', NeuPuncType.Plus);
+        }
     }
 }

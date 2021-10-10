@@ -15,7 +15,13 @@ namespace Neu
         RightBrace,
 
         Semicolon,
-        Comma
+        Comma,
+
+        Arrow,
+        Colon,
+
+        Equal,
+        Plus
     }
 
     ///

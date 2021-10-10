@@ -6,9 +6,9 @@ using System;
 
 namespace Neu
 {
-    public partial class NeuOperator : NeuToken
+    public partial class NeuNilLiteral : NeuLiteral
     {
-        public NeuOperator(
+        public NeuNilLiteral(
             String source,
             SourceLocation start,
             SourceLocation end)

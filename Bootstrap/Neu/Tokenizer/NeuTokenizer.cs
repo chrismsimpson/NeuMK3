@@ -83,6 +83,12 @@ namespace Neu
                     return tokenizer.RawTokenizeInlineComment();
 
 
+                /// Pre-Operator Punctuation
+
+                case '-' when tokenizer.Scanner.Match(equals: '>'):
+                    return tokenizer.RawTokenizeArrow();
+
+
                 /// Punc
 
                 case '(':
@@ -100,8 +106,17 @@ namespace Neu
                 case ';':
                     return tokenizer.RawTokenizeSemicolon();
 
+                case ':':
+                    return tokenizer.RawTokenizeColon();
+
                 case ',':
                     return tokenizer.RawTokenizeComma();
+
+                case '=':
+                    return tokenizer.RawTokenizeEqual();
+
+                case '+':
+                    return tokenizer.RawTokenizePlus();
 
 
                 /// Keywords
@@ -113,10 +128,26 @@ namespace Neu
                     return tokenizer.RawTokenizeReturn();
 
 
+                /// Nil literal
 
+                    // TODO
+
+
+                /// Number literal
+
+                case Char c when IsNumericLiteralStart(c):
+                    return tokenizer.RawTokenizeNumericLiteral();
+
+
+                /// String literal
 
                 case Char c when IsStringLiteralStart(c):
                     throw new Exception();
+
+                ///
+
+                case Char c when IsIdentifierStart(c):
+                    return tokenizer.RawTokenizeIdentifier();
 
 
 

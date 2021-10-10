@@ -12,7 +12,18 @@ namespace Neu
         public static NeuStatement ParseStatement(
             this NeuParser parser)
         {
-            throw new Exception();
+            switch (parser.Tokenizer.Peek())
+            {
+                /// Keywords
+
+                case NeuKeyword keyword when keyword.KeywordType == NeuKeywordType.Return:
+                    return parser.ParseReturnStatement();
+
+                ///
+
+                case var p:
+                    throw new Exception($"Unsupported: {p}");
+            }
         }
     }
 }
